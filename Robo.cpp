@@ -9,6 +9,11 @@ using namespace cv;
 int main(){
 
 Mat image = imread("map.PNG", CV_LOAD_IMAGE_GRAYSCALE);
+
 //Hej med jer, Lærkes ændring
   
+
+
+  return 0;
+
 }
