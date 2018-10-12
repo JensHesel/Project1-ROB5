@@ -10,4 +10,5 @@ int main(){
 
 Mat image = imread("map.PNG", CV_LOAD_IMAGE_GRAYSCALE);
 
+  return 0;
 }
