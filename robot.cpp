@@ -12,7 +12,7 @@ robot::robot(Point begin, Point pos, vector<Point> dots)
 {
 	start = begin;
 	now = pos;
-	found_objects = dots;
+	found_targets = dots;
 }
 
 robot::~robot()
@@ -30,6 +30,11 @@ Point robot::laserScan(Mat &map, Scalar color)
 }
 
 void robot::getBack(Mat &input, Mat &output)
+{
+
+}
+
+void robot::getToTarget(Mat &map)
 {
 
 }
