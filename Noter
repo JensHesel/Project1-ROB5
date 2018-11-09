@@ -37,6 +37,12 @@ Derefter har den en løkke, indtil der ikke er flere naboer.
 Der laver man en ny liste med naboer. Så løber man alle de første naboer igennem, og lægger alle deres naboer i den nye liste.
 Denne er O(nm+nm) (den løber højest billede igennem 1 gang. */
 
+9/11:
+- Find frem til map fra start
+- Opdater laserscan så den finder et interval af farver + ikke går om hjørner (søg mellem punkt søg fra); - Lærke
+- Lav funktion der kører hele mappet igennem igen, og hvis ikke der er noget sort imellem nogle blå der er tæt på hinanden, så lav en linje imellem - Jens
+- Implementer getToTarget funktion - Asger
+
   return 0;
 
 }
