@@ -19,9 +19,51 @@ robot::~robot()
 {
 }
 
-void robot::followRute(Mat &input, Mat &output)
+void robot::followRute(Mat &input)
 {
 
+	Point old(0, 0);
+	namedWindow("map", WINDOW_NORMAL);
+	while (found_targets.size() < 8) {
+
+		int movement = 0;
+
+	
+		imshow("map", input);
+		waitKey(1);
+
+		for (int k = -1; k < 2; k++) //all neighbors til startpunktet
+		{
+			for (int l = -1; l < 2; l++)
+			{
+				if (input.at<Vec3b>(Point(now.x + k, now.y + l)) == Vec3b(255, 0, 0))
+				{
+					input.at<Vec3b>(now) = Vec3b(0, 255, 0);
+					now = Point(now.x + k, now.y + l);
+					movement++;
+					break;
+
+				}
+
+
+				else if (input.at<Vec3b>(Point(now.x + k, now.y + l)) == Vec3b(0, 255, 0) && Point(now.x + k, now.y + l) != old)
+				{
+					old = now;
+					now = Point(now.x + k, now.y + l);
+					movement++;
+					break;
+				}
+
+
+				if (movement > 9) {
+					laserScan(input, Vec3b(0, 0, 255), now);
+					movement = 0;
+				}
+			}
+		}
+
+
+	}
 }
 
 Point robot::laserScan(Mat &map, Vec3b color, Point start) //Med neighbors metode
