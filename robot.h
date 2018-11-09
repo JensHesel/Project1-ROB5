@@ -10,7 +10,7 @@ public:
 	robot();
 	robot(Point begin, Point pos, vector<Point> dots);
 	~robot();
-	void followRute(Mat &input, Mat &output); //Jens
+	void followRute(Mat &input); //Jens
 	Point laserScan(Mat &map, Vec3b color, Point start); //Lærke kigger på den
 	void getBack(Mat &input, Mat &output); //Asger
 	void getToTarget(Mat &map); //Asger
