@@ -152,4 +152,28 @@ void drawVoronoi(Mat &img)
 
 		cout << endl;
 	}
+	
+// Lap huller
+	for (int i = 0; i < img.cols; i++)
+	{
+		for (int j = 0; j < img.rows; j++)
+		{
+			// Tjekker (-1,-1) og (1,1) - Diagonalt
+			if (img.at<Vec3b>(Point(i - 1, j - 1)) == Vec3b(255, 0, 0) && img.at<Vec3b>(Point(i + 1, j + 1)) == Vec3b(255, 0, 0))
+			img.at<Vec3b>(Point(i, j)) = Vec3b(255, 0, 0);
+			
+			// Tjekker (-1,0) og (1,0) - Over under
+			if (img.at<Vec3b>(Point(i - 1, j)) == Vec3b(255, 0, 0) && img.at<Vec3b>(Point(i + 1, j)) == Vec3b(255, 0, 0))
+			img.at<Vec3b>(Point(i, j)) = Vec3b(255, 0, 0);
+			
+			// Tjekker (-1,1) og (1,-1) - Diagonalt
+			if (img.at<Vec3b>(Point(i - 1, j + 1)) == Vec3b(255, 0, 0) && img.at<Vec3b>(Point(i + 1, j - 1)) == Vec3b(255, 0, 0))
+			img.at<Vec3b>(Point(i, j)) = Vec3b(255, 0, 0);
+			
+			// Tjekker (0,-1) og (0,1) - Venstre højre
+			if (img.at<Vec3b>(Point(i, j - 1)) == Vec3b(255, 0, 0) && img.at<Vec3b>(Point(i, j + 1)) == Vec3b(255, 0, 0))
+			img.at<Vec3b>(Point(i, j)) = Vec3b(255, 0, 0);
+
+		}
+	}
 }
