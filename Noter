@@ -43,6 +43,13 @@ Denne er O(nm+nm) (den løber højest billede igennem 1 gang. */
 - Lav funktion der kører hele mappet igennem igen, og hvis ikke der er noget sort imellem nogle blå der er tæt på hinanden, så lav en linje imellem - Jens
 - Implementer getToTarget funktion - Asger
 
+23-11:
+- Optimer/ændrer followrute
+- Gå efter blå pixels eller targets?
+- Samme vej tilbage fra target? Skal man hvis man vil komme omkring alle blå pixels
+- Gør robot tydligere/større
+- Optimer laserscan(hastighed)
+
   return 0;
 
 }
