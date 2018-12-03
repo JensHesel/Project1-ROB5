@@ -1,4 +1,5 @@
 #include<opencv2/opencv.hpp>
+#include"robot.h"
 
 using namespace std;
 using namespace cv;
@@ -6,24 +7,57 @@ using namespace cv;
 void brushfire(Mat &img);
 void drawVoronoi(Mat &img);
 void onMouse(int event, int x, int y, int, void* param);
-void findBlindLine(Mat &img);
+void lapning(Mat &img);
+void lapningLige(Mat &img);
+void fjernTrekant(Mat &img);
 
 int main()
 {
+	//Mat map = imread("map2.PNG");
+	//namedWindow("Original", WINDOW_AUTOSIZE);
+	//imshow("Original", map);
+	//robot b;
+	//cout << "found point: " << b.laserScan(map, Vec3b(0, 0, 230), Vec3b(50, 50, 255), Point(100, 100));
+
+	///*double time = clock();
+	//brushfire(map);
+	//time = clock() - time;
+	//cout << "It took this many seconds: " << time / CLOCKS_PER_SEC;
+	//namedWindow("Brushfired map", WINDOW_AUTOSIZE);
+	//imshow("Brushfired map", map);
+	//drawVoronoi(map);
+	//imwrite("linedmap2.png", map);
+	//namedWindow("map", WINDOW_NORMAL);
+	//imshow("map", map);
+	//Rect roi(120, 90, 200, 170);
+	//Mat temp = map(roi);
+	//namedWindow("temp", WINDOW_NORMAL);
+	//imshow("temp", temp);
+	//Mat map = imread("linedmap.png");*/
+	//robot a;
+	//a.followRute(map);
+	//setMouseCallback("Brushfired map", onMouse, &map);
+	//waitKey(0);
+
+	robot a;
 	Mat map = imread("map2.png");
 	namedWindow("Original", WINDOW_AUTOSIZE);
 	imshow("Original", map);
-	double time = clock();
+	//double time = clock();
 	brushfire(map);
-	time = clock() - time;
-	cout << "It took this many seconds: " << time / CLOCKS_PER_SEC;
-	namedWindow("Brushfired map", WINDOW_AUTOSIZE);
+	//time = clock() - time;
+	//cout << "It took this many seconds: " << time / CLOCKS_PER_SEC;
+	imwrite("brushfiredmap2.png", map);
+	//Mat map = imread("brushfiredmap.png");
+	namedWindow("Brushfired map", WINDOW_NORMAL);
 	imshow("Brushfired map", map);
 	drawVoronoi(map);
 	namedWindow("map", WINDOW_NORMAL);
 	imshow("map", map);
-	setMouseCallback("Brushfired map", onMouse, &map);
+	a.followRute(map);
+	imshow("map", map);
 	waitKey(0);
+
 }
 
 void onMouse(int event, int x, int y, int, void* param)
@@ -31,6 +65,7 @@ void onMouse(int event, int x, int y, int, void* param)
 	Mat map = *((Mat*)param);
 	if (event == EVENT_LBUTTONDOWN)
 	{
+		cout << "x: " << x << ", y: " << y << endl;
 		cout << map.at<Vec3b>(Point(x, y)) << endl;
 	}
 }
@@ -122,7 +157,7 @@ void drawVoronoi(Mat &img)
 						{
 							countb++;
 						}
-						else if (compare.at<Vec3b>(Point(i, j))[2] == compare.at<Vec3b>(Point(i + k, j + l))[2])
+						else if (compare.at<Vec3b>(Point(i, j))[2] == img.at<Vec3b>(Point(i + k, j + l))[0])
 						{
 							counte++;
 						}
@@ -136,44 +171,101 @@ void drawVoronoi(Mat &img)
 			}
 		}
 	}
-	for (int i = 0; i < compare.cols; i++)
+
+	//Lapning
+	lapning(img);
+	lapningLige(img);
+	fjernTrekant(img);
+}
+
+void lapning(Mat &img)
+{
+	int countblue(0);
+	for (int i = 1; i < img.cols - 1; i++) //løber x-koordinater igennem
 	{
-		for (int j = 127; j < 131; j++)
+		for (int j = 1; j < img.rows - 1; j++) //løber y-koordinater igennem
 		{
-			cout << (int)compare.at<Vec3b>(Point(i, j))[1] << " ";
+			for (int k = -1; k < 2; k++) //3 x 3 maske
+			{
+				for (int l = -1; l < 2; l++)
+				{
+					if (k == 0 && l == 0) //Hvis man er i midten
+					{ }
+					else if (img.at<Vec3b>(Point(i + k, j + l)) == Vec3b(255, 0, 0)) //Hvis den man tjekker er blå
+						countblue++;
+				}
+			}
+
+			if (countblue == 2) //indsætter punkter
+			{
+				// Tjekker (-1,-1) og (1,1) - Diagonalt
+				if (img.at<Vec3b>(Point(i - 1, j - 1)) == Vec3b(255, 0, 0) && img.at<Vec3b>(Point(i + 1, j + 1)) == Vec3b(255, 0, 0))
+					img.at<Vec3b>(Point(i, j)) = Vec3b(255, 0, 0);
+
+				// Tjekker (-1,1) og (1,-1) - Diagonalt
+				if (img.at<Vec3b>(Point(i - 1, j + 1)) == Vec3b(255, 0, 0) && img.at<Vec3b>(Point(i + 1, j - 1)) == Vec3b(255, 0, 0))
+					img.at<Vec3b>(Point(i, j)) = Vec3b(255, 0, 0);
+
+				for (int k = -1; k < 2; k++)
+				{
+					if (img.at<Vec3b>(Point(i - 1, j)) == Vec3b(255, 0, 0) && img.at<Vec3b>(Point(i + 1, j + k)) == Vec3b(255, 0, 0))
+						img.at<Vec3b>(Point(i, j)) = Vec3b(255, 0, 0);
+
+					if (img.at<Vec3b>(Point(i + 1, j)) == Vec3b(255, 0, 0) && img.at<Vec3b>(Point(i - 1, j + k)) == Vec3b(255, 0, 0))
+						img.at<Vec3b>(Point(i, j)) = Vec3b(255, 0, 0);
+
+					if (img.at<Vec3b>(Point(i, j - 1)) == Vec3b(255, 0, 0) && img.at<Vec3b>(Point(i + k, j + 1)) == Vec3b(255, 0, 0))
+						img.at<Vec3b>(Point(i, j)) = Vec3b(255, 0, 0);
+
+					if (img.at<Vec3b>(Point(i, j + 1)) == Vec3b(255, 0, 0) && img.at<Vec3b>(Point(i + k, j - 1)) == Vec3b(255, 0, 0))
+						img.at<Vec3b>(Point(i, j)) = Vec3b(255, 0, 0);
+				}
+			}
+			countblue = 0;
 		}
-
-		cout << "            ";
-
-		for (int j = 127; j < 131; j++)
-		{
-			cout << (int)img.at<Vec3b>(Point(i, j))[1] << " ";
-		}
-
-		cout << endl;
 	}
-	
-// Lap huller
-	for (int i = 0; i < img.cols; i++)
+}
+
+void lapningLige(Mat &img)
+{
+	for (int i = 1; i < img.cols - 1; i++)
 	{
-		for (int j = 0; j < img.rows; j++)
+		for (int j = 1; j < img.rows - 1; j++)
 		{
-			// Tjekker (-1,-1) og (1,1) - Diagonalt
-			if (img.at<Vec3b>(Point(i - 1, j - 1)) == Vec3b(255, 0, 0) && img.at<Vec3b>(Point(i + 1, j + 1)) == Vec3b(255, 0, 0))
-			img.at<Vec3b>(Point(i, j)) = Vec3b(255, 0, 0);
-			
 			// Tjekker (-1,0) og (1,0) - Over under
 			if (img.at<Vec3b>(Point(i - 1, j)) == Vec3b(255, 0, 0) && img.at<Vec3b>(Point(i + 1, j)) == Vec3b(255, 0, 0))
-			img.at<Vec3b>(Point(i, j)) = Vec3b(255, 0, 0);
-			
-			// Tjekker (-1,1) og (1,-1) - Diagonalt
-			if (img.at<Vec3b>(Point(i - 1, j + 1)) == Vec3b(255, 0, 0) && img.at<Vec3b>(Point(i + 1, j - 1)) == Vec3b(255, 0, 0))
-			img.at<Vec3b>(Point(i, j)) = Vec3b(255, 0, 0);
-			
+				img.at<Vec3b>(Point(i, j)) = Vec3b(255, 0, 0);
+
 			// Tjekker (0,-1) og (0,1) - Venstre højre
 			if (img.at<Vec3b>(Point(i, j - 1)) == Vec3b(255, 0, 0) && img.at<Vec3b>(Point(i, j + 1)) == Vec3b(255, 0, 0))
-			img.at<Vec3b>(Point(i, j)) = Vec3b(255, 0, 0);
+				img.at<Vec3b>(Point(i, j)) = Vec3b(255, 0, 0);
 
+		}
+	}
+}
+
+void fjernTrekant(Mat &img)
+{
+	for (int i = 1; i < img.rows - 1; i++)
+	{
+		for (int j = 1; j < img.cols - 1; j++)
+		{
+			int count(0);
+			vector<Point> rute{Point(0, -1), Point(1, 0), Point(0, 1), Point(-1, 0) };
+			if (img.at<Vec3b>(Point(j, i)) == Vec3b(255, 0, 0)) //hvis man er på et blåt pixel
+			{
+				for (int k = 0; k < rute.size(); k++)
+				{
+					if (img.at<Vec3b>(Point(j, i) + rute[k]) == Vec3b(255, 0, 0))
+					{
+						count++;
+					}
+				}
+				if (count > 2)
+				{
+					img.at<Vec3b>(Point(j, i)) = Vec3b(100, 100, 100);
+				}
+			}
 		}
 	}
 }
