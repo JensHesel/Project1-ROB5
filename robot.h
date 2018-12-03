@@ -11,12 +11,7 @@ public:
 	robot(Point begin, Point pos, vector<Point> dots);
 	~robot();
 	void followRute(Mat &input); //Jens
-
 	
-	
-
-	
-
 private: 
 	Point now, start;
 	vector<Point> found_targets;
