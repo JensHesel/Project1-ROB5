@@ -1,0 +1,49 @@
+void robot::moveOne(Mat &map, int &moved, Point &old, Vec3b color, bool checkold)
+{
+	vector<Point> rute{ Point(-1, -1), Point(0, -1), Point(1, -1), Point(1, 0), Point(1, 1), Point(0, 1), Point(-1, 1), Point(-1, 0) };
+	for (int i = 0; i < rute.size(); i++)
+	{
+		if (map.at<Vec3b>(Point(now) + rute[i]) == color)
+		{
+			if (checkold && (Point(now) + rute[i]) != old) //LÆRKE, vi bruger umiddelbart ikke den her, da vi begge steder har checkold til true
+			{
+				old = now;
+				now = Point(now) + rute[i];
+				Vec3b oldcolor = map.at<Vec3b>(now);
+				map.at<Vec3b>(now) = Vec3b(230, 0, 255);
+				imshow("map", map);
+				waitKey(2);
+				map.at<Vec3b>(now) = oldcolor - Vec3b(0, 20, 0);
+				moved++;
+				path.push_back(now);
+				return;
+			}
+			else if (!checkold)
+			{
+				//LÆRKE, jeg har indsat det her if statement
+				if (Point(now) + rute[i] == old) //LÆRKE, hvis den man er ved at rykke sig hen på, er den samme som man lige har været på
+				{
+					Vec3b oldcolor = map.at<Vec3b>(now); //Så farv now en tand mørkere, så man ikke rykker derud igen lige efter
+					map.at<Vec3b>(now) = oldcolor - Vec3b(0, 20, 0); 
+				}
+				old = now;
+				now = Point(now) + rute[i];
+				Vec3b oldcolor = map.at<Vec3b>(now);
+				map.at<Vec3b>(now) = Vec3b(230, 0, 255);
+				imshow("map", map);
+				waitKey(2);
+				map.at<Vec3b>(now) = oldcolor;
+				if (color == Vec3b(255, 0, 0))
+					map.at<Vec3b>(now) = Vec3b(0, 255, 0);
+				else
+				{
+					Vec3b oldcolor = map.at<Vec3b>(now);
+					map.at<Vec3b>(now) = oldcolor - Vec3b(0, 20, 0);
+				}
+				moved++;
+				path.push_back(now);
+				return;
+			}
+		}
+	}
+}
