@@ -22,6 +22,7 @@ robot::~robot()
 
 void robot::followRute(Mat &input)
 {
+	int search(0), total(0);
 	Point old(0, 0);
 	namedWindow("map", WINDOW_NORMAL);
 	int movement(0), movementprev(0);
@@ -37,64 +38,77 @@ void robot::followRute(Mat &input)
 		while (movement == movementprev)
 		{
 			blue = false;
-			moveOne(input, movement, old, color, false);
+			moveOne(input, movement, old, color, true);
 			color -= Vec3b(0, 20, 0);
 		}
-		/*if (movement == movementprev)
-		{
-			moveOne(input, movement, old, Vec3b(0,255,0), true);
-		}
-		if (movement == movementprev)
-		{
-			moveOne(input, movement, old, Vec3b(0, 255, 0), false);
-		}
-		if (movement == movementprev)
-		{
-			moveOne(input, movement, old, Vec3b(0, 105, 0), false);
-		}*/
 		if (movement > 15 && blue) {
 			target = laserScan(input, Vec3b(0, 0, 230), Vec3b(50,50,255));
 			movement = 0;
 			if (target != Point(0, 0)) //Hvis man har fundet et punkt
 			{
 				getToTarget(input, target); //I denne kører den både til target og tilbage til start
+				cout << "length traveled while search for target " << found_targets.size() << ": " << path.size() << endl;
+				search += path.size();
+				total = search * 2;
 				path.clear();
 			}
 		}
 		movementprev = movement;
 
 	}
+	cout << "The total search length is: " << search << endl;
+	cout << "The total length traveled is: " << total << endl;
 }
 
 void robot::moveOne(Mat &map, int &moved, Point &old, Vec3b color, bool checkold)
 {
+	bool greenOption(false);
 	vector<Point> rute{ Point(-1, -1), Point(0, -1), Point(1, -1), Point(1, 0), Point(1, 1), Point(0, 1), Point(-1, 1), Point(-1, 0) };
 	for (int i = 0; i < rute.size(); i++)
 	{
 		if (map.at<Vec3b>(Point(now) + rute[i]) == color)
 		{
-			if (checkold && (Point(now) + rute[i]) != old)
+			if (/*checkold && */(Point(now) + rute[i]) != old) //LÆRKE, vi bruger umiddelbart ikke den her, da vi begge steder har checkold til true
 			{
 				old = now;
 				now = Point(now) + rute[i];
+				
+				//Vi tegner robotten
 				Vec3b oldcolor = map.at<Vec3b>(now);
 				map.at<Vec3b>(now) = Vec3b(230, 0, 255);
 				imshow("map", map);
 				waitKey(2);
-				map.at<Vec3b>(now) = oldcolor - Vec3b(0, 20, 0);
+
+				if (color == Vec3b(255, 0, 0)) //hvis den er blå
+					map.at<Vec3b>(now) = Vec3b(0, 255, 0); //farv den grøn
+				else
+				{
+					//Vec3b oldcolor = map.at<Vec3b>(now); //hvis den er grøn
+					map.at<Vec3b>(now) = oldcolor - Vec3b(0, 20, 0); //gør den mørkere
+				}
+
 				moved++;
 				path.push_back(now);
 				return;
 			}
-			else if (!checkold)
+			/*else if (!checkold)
 			{
+				//LÆRKE, jeg har indsat det her if statement
+				if (Point(now) + rute[i] == old) //LÆRKE, hvis den man er ved at rykke sig hen på, er den samme som man lige har været på
+				{
+					Vec3b oldcolor = map.at<Vec3b>(now); //Så farv now en tand mørkere, så man ikke rykker derud igen lige efter
+					map.at<Vec3b>(now) = oldcolor - Vec3b(0, 20, 0); 
+				}
 				old = now;
 				now = Point(now) + rute[i];
+				
+				//Vi tegner prikken
 				Vec3b oldcolor = map.at<Vec3b>(now);
 				map.at<Vec3b>(now) = Vec3b(230, 0, 255);
 				imshow("map", map);
 				waitKey(2);
 				map.at<Vec3b>(now) = oldcolor;
+
 				if (color == Vec3b(255, 0, 0))
 					map.at<Vec3b>(now) = Vec3b(0, 255, 0);
 				else
@@ -102,6 +116,37 @@ void robot::moveOne(Mat &map, int &moved, Point &old, Vec3b color, bool checkold
 					Vec3b oldcolor = map.at<Vec3b>(now);
 					map.at<Vec3b>(now) = oldcolor - Vec3b(0, 20, 0);
 				}
+				moved++;
+				path.push_back(now);
+				return;
+			}*/
+		}
+		if (map.at<Vec3b>(Point(now) + rute[i])[2] == 0 && map.at<Vec3b>(Point(now) + rute[i])[1] > 0 && Point(now) + rute[i] != old) //Hvis der er en grøn mulighed, som ikke er old
+		{
+			greenOption = true; //så lav den her true, så man ikke hopper hen til old
+		}
+	}
+	if (greenOption == false)
+	{
+		for (int i = 0; i < rute.size(); i++) //Hvis ikke der var en i den farve som ikke var old, så tillad old
+		{
+			if (map.at<Vec3b>(Point(now) + rute[i]) == color)
+			{
+				if (Point(now) + rute[i] == old) //hvis den man er ved at rykke sig hen på, er den samme som man lige har været på
+				{
+					Vec3b oldcolor = map.at<Vec3b>(now); //Så farv now en tand mørkere, så man ikke rykker derud igen lige efter
+					map.at<Vec3b>(now) = oldcolor - Vec3b(0, 20, 0);
+				}
+				old = now;
+				now = Point(now) + rute[i];
+
+				//Vi tegner robotten
+				Vec3b oldcolor = map.at<Vec3b>(now);
+				map.at<Vec3b>(now) = Vec3b(230, 0, 255);
+				imshow("map", map);
+				waitKey(2);
+				map.at<Vec3b>(now) = oldcolor - Vec3b(0, 20, 0);
+
 				moved++;
 				path.push_back(now);
 				return;
@@ -239,7 +284,7 @@ bool robot::clearline(Mat &map, Point A, Point B)
 
 void robot::getBack(Mat &map, Point robot_leave)
 {
-	while (robot_leave != now)
+	/*while (robot_leave != now)
 	{
 		map.at<Vec3b>(now) = Vec3b(0, 255, 255);
 		imshow("map", map);
@@ -263,7 +308,7 @@ void robot::getBack(Mat &map, Point robot_leave)
 		}
 		imshow("map", map);
 		waitKey(10);
-	}
+	}*/
 
 	path.reverse();
 	
@@ -339,6 +384,7 @@ void robot::getToTarget(Mat &map, Point dotPos)
 		map.at<Vec3b>(now) = Vec3b(0, 255, 255);
 		imshow("map", map);
 		waitKey(10);
+		path.push_back(now); //indsætter at den også gemmer punkterne ud til target
 	}
 
 
