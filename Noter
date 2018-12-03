@@ -50,6 +50,11 @@ Denne er O(nm+nm) (den løber højest billede igennem 1 gang. */
 - Gør robot tydligere/større
 - Optimer laserscan(hastighed)
 
+03-12:
+To do inden aflevering d. 07-12
+- Gå alt kode igennem og ret til; slet udkommenteret og lav kommentarer hvor der mangler. 
+- Skriv rapporten (se drev)
+
   return 0;
 
 }
