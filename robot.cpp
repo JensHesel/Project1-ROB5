@@ -70,17 +70,13 @@ void robot::moveOne(Mat &map, int &moved, Point &old, Vec3b color)
 				old = now; 
 				now = Point(now) + rute[i];
 				
-				//Vi tegner robotten
-				Vec3b oldcolor = map.at<Vec3b>(now);
-				map.at<Vec3b>(now) = Vec3b(230, 0, 255);
-				imshow("map", map);
-				waitKey(2);
+				colorRobot(map); //Vi tegner robotten
 
 				if (color == Vec3b(255, 0, 0)) //hvis den er blå
 					map.at<Vec3b>(now) = Vec3b(0, 255, 0); //farv den grøn
 				else
 				{
-					//Vec3b oldcolor = map.at<Vec3b>(now); //hvis den er grøn
+					Vec3b oldcolor = map.at<Vec3b>(now); //hvis den er grøn
 					map.at<Vec3b>(now) = oldcolor - Vec3b(0, 20, 0); //gør den mørkere
 				}
 
@@ -105,12 +101,10 @@ void robot::moveOne(Mat &map, int &moved, Point &old, Vec3b color)
 		old = now;
 		now = temp;
 
-		//Vi tegner robotten
-		oldcolor = map.at<Vec3b>(now);
-		map.at<Vec3b>(now) = Vec3b(230, 0, 255);
-		imshow("map", map);
-		waitKey(2);
-		map.at<Vec3b>(now) = oldcolor - Vec3b(0, 20, 0);
+		
+		colorRobot(map); //Vi tegner robotten
+	
+		map.at<Vec3b>(now) = oldcolor - Vec3b(0, 20, 0); //Feltet gøres mørkere
 
 		moved++;
 		path.push_back(now);
@@ -126,7 +120,7 @@ Point robot::laserScan(Mat &map, Vec3b mincolor, Vec3b maxcolor) //Med neighbors
 	//Find alle naboer til startpunktet der ikke er sorte
 	//Find alle de udadgående naboer til naboerne i en for lykke, indtil den er kørt igennem et vis antal gange.
 
-	int diameter(20); //Hvor mange pixels ud fra midten skal den scanne
+	int radius(20); //Hvor mange pixels ud fra midten skal den scanne
 	vector<Point> neighbors; //Den der kommer til at indeholde alle de pixels der er blevet testet
 
 	for (int k = -1; k < 2; k++) //all neighbors til startpunktet
@@ -148,14 +142,13 @@ Point robot::laserScan(Mat &map, Vec3b mincolor, Vec3b maxcolor) //Med neighbors
 
 	vector<Point> newneighbors(neighbors); //Den kommer til at indeholde alle de pixels vi er i gang med at teste
 
-	for (int i = 0; i < diameter; i++)
+	for (int i = 0; i < radius; i++)
 	{
 		//Her tegnes den firkant, som er i gang med at blive scannet
 		vector<Vec3b> colornow(newneighbors.size(), Vec3b(100, 0, 100)); //Opretter en vector med den farve, som man gerne vil have scannet har
 		vector<Vec3b> colorprev(newneighbors.size(), 0); //Opretter en vector, som kommer til at indeholde de farver som pixelsene der bliver scannet havde, før de blev lilla (så de kan blive farvet tilbage i den farve)
 		colvec(map, newneighbors, colornow, colorprev); //Farver det område der scannes i lilla, og gemmer den gamle farve
-		imshow("map", map); //Viser billedet med scanningen på
-		waitKey(1); //viser billedet
+		colorRobot(map); //Tegner robotten (og printer scannet + robotten)
 		colvec(map, newneighbors, colorprev, colornow); //Farver området til den gamle farve igen
 
 
@@ -254,12 +247,8 @@ void robot::getBack(Mat &map)
 	{
 		now = *it; //ryk robottens placering 
 
-		//Tegn robotten på mappet
-		Vec3b oldcolor = map.at<Vec3b>(now);
-		map.at<Vec3b>(now) = Vec3b(230, 0, 255);
-		imshow("map", map);
-		waitKey(2);
-		map.at<Vec3b>(now) = oldcolor;
+		
+		colorRobot(map); //Tegn robotten på mappet
 	}
 }
 
@@ -312,6 +301,23 @@ void robot::colorTarget(Mat map, Vec3b minColor, Vec3b maxColor)
 		}
 	}
 }
+
+void robot::colorRobot(Mat &map)
+{
+	vector<Point> points; //Vector der skal indeholde de punkter hvor robotten er, og lige omkring
+	for (int i = -1; i < 2; i++)
+	{
+		for (int j = -1; j < 2; j++)
+		{
+			points.push_back(Point(now.x + i, now.y + j)); //Punkterne til robotten indsættes
+		}
+	}
+	vector<Vec3b> robotcolor(9, Vec3b(230, 0, 255)), oldcolor(9); //Farver på robotplacering (før og efter)
+	colvec(map, points, robotcolor, oldcolor); //Farv robotten
+	imshow("map", map);
+	waitKey(1);
+	colvec(map, points, oldcolor, robotcolor); //Lav området tilbage til den gamle farve (men uden at vise det)
+} 
 
 bool operator<(const Vec3b &a, const Vec3b &b)
 {
