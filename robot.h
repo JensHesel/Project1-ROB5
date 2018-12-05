@@ -23,5 +23,6 @@ private:
 	void colorTarget(Mat map, Vec3b minColor, Vec3b maxColor); //Funktion der farver hele det fundende objekt til en anden farve
 	Point laserScan(Mat &map, Vec3b mincolor, Vec3b maxcolor); //Scanner en firkant omkring det punkt man står på
 	void getBack(Mat &map); //følger path tilbage til start
+	void colorRobot(Mat &map); //Funktion der tegner robotten der hvor den er
 };
 
